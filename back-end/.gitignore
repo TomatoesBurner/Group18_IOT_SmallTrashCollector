@@ -16,7 +16,7 @@ logs/
 *.log
 
 # 操作系统文件
-.DS_Store
+.DS_Store/
 Thumbs.db
 
 # IDE和编辑器
