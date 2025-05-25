@@ -1,43 +1,43 @@
-// 系统配置文件
+// System configuration file
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
 const timezone = require('dayjs/plugin/timezone');
 
-// 配置dayjs
+// Configure dayjs
 dayjs.extend(utc);
 dayjs.extend(timezone);
-dayjs.tz.setDefault('Australia/Perth'); // 设置默认时区为澳洲珀斯
+dayjs.tz.setDefault('Australia/Perth'); // Set default timezone to Perth, Australia
 
 module.exports = {
-  // 服务器配置
+  // Server configuration
   server: {
     port: process.env.PORT || 3008,
     host: process.env.HOST || '0.0.0.0'
   },
   
-  // API路径前缀
+  // API path prefix
   apiPrefix: '/api',
   
-  // 垃圾桶相关配置
+  // Trash bin related configuration
   trashBin: {
-    // 垃圾桶类型
+    // Trash bin types
     types: {
       DRY: 'dry',
       WET: 'wet'
     },
-    // 垃圾桶重量阈值（千克）
+    // Trash bin weight thresholds (kg)
     weightThreshold: {
-      dry: 10,  // 干垃圾重量阈值
-      wet: 15   // 湿垃圾重量阈值
+      dry: 10,  // Dry trash weight threshold
+      wet: 15   // Wet trash weight threshold
     }
   },
   
-  // 获取当前本地时间（澳洲珀斯时间）
+  // Get current local time (Perth, Australia)
   getPerthTime: () => {
     return dayjs().tz('Australia/Perth').toDate();
   },
   
-  // 格式化时间为字符串
+  // Format time as string
   formatTime: (date) => {
     return dayjs(date).tz('Australia/Perth').format('YYYY-MM-DD HH:mm:ss');
   }

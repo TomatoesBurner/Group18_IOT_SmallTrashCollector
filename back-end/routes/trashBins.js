@@ -4,13 +4,13 @@ const TrashRecord = require('../models/TrashRecord');
 const config = require('../config');
 
 
-// 保存垃圾投放记录
+// Save trash disposal record
 router.post('/record', async (req, res) => {
   try {
     const { type, weight, currentWeight, binId, isFull } = req.body;
     
     if (!type || !['dry', 'wet'].includes(type)) {
-      return res.status(400).json({ error: '无效的垃圾类型，必须是 dry 或 wet' });
+      return res.status(400).json({ error: 'Invalid trash type, must be dry or wet' });
     }
     
     const formattedDate = config.formatTime(new Date());
@@ -23,12 +23,12 @@ router.post('/record', async (req, res) => {
       binId: binId || 'unknown',
       timestamp: formattedDate,
       isFull: isFull,
-      message: isFull ? `${type}垃圾桶已满，需要清空` : `添加${weight}kg${type}垃圾`
+      message: isFull ? `${type} bin is full, needs emptying` : `Added ${weight}kg of ${type} trash`
     });
     
     await record.save();
     
-    // 通过WebSocket广播新记录
+    // Broadcast new record via WebSocket
     req.app.get('io').emit('newTrashRecord', {
       id: record._id,
       type: record.type,
@@ -43,7 +43,7 @@ router.post('/record', async (req, res) => {
     
     res.status(201).json({ 
       success: true, 
-      message: '垃圾记录已保存',
+      message: 'Trash record saved',
       record: {
         id: record._id,
         type: record.type,
@@ -56,8 +56,8 @@ router.post('/record', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('保存垃圾记录失败:', error);
-    res.status(500).json({ error: '服务器错误，无法保存垃圾记录' });
+    console.error('Failed to save trash record:', error);
+    res.status(500).json({ error: 'Server error, unable to save trash record' });
   }
 });
 
@@ -68,7 +68,7 @@ router.post('/reset', async (req, res) => {
     const { type, binId } = req.body;
     
     if (!type || !['dry', 'wet'].includes(type)) {
-      return res.status(400).json({ error: '无效的垃圾类型，必须是 dry 或 wet' });
+      return res.status(400).json({ error: 'Invalid trash type, must be dry or wet' });
     }
     const formattedDate = config.formatTime(new Date());
     
@@ -80,7 +80,7 @@ router.post('/reset', async (req, res) => {
       binId: binId || 'unknown',
       timestamp: formattedDate,
       isFull: false,
-      message: `${type}垃圾桶已被清空`
+      message: `${type} bin has been emptied`
     });
     
     await resetRecord.save();
@@ -99,50 +99,50 @@ router.post('/reset', async (req, res) => {
     
     res.json({
       success: true,
-      message: `${type}垃圾桶已重置`,
+      message: `${type} bin has been reset`,
       timestamp: formattedDate
     });
     
   } catch (error) {
-    console.error('重置垃圾桶失败:', error);
-    res.status(500).json({ error: '服务器错误，无法重置垃圾桶' });
+    console.error('Failed to reset trash bin:', error);
+    res.status(500).json({ error: 'Server error, unable to reset trash bin' });
   }
 });
 
 
-// 查询垃圾记录
+// Query trash records
 router.get('/records', async (req, res) => {
   try {
     const { startDate, endDate, type } = req.query;
     
-    // 验证必填参数
+    // Validate required parameters
     if (!startDate || !endDate) {
       return res.status(400).json({ 
-        error: '缺少必要参数',
-        message: 'startDate和endDate是必填参数，格式为YYYY-MM-DD'
+        error: 'Missing required parameters',
+        message: 'startDate and endDate are required, format: YYYY-MM-DD'
       });
     }
 
-    // 构建查询条件
+    // Build query conditions
     const query = {
       timestamp: {
         $gte: `${startDate} 00:00:00`,
         $lte: `${endDate} 23:59:59`
       },
-      operationType: 'add'  // 固定只查询添加垃圾的记录
+      operationType: 'add'  // Fixed to query only add trash records
     };
 
-    // 如果指定了类型，添加到查询条件
+    // If type is specified, add to query conditions
     if (type && ['dry', 'wet'].includes(type)) {
       query.type = type;
     }
 
-    // 查询记录
+    // Query records
     const records = await TrashRecord.find(query)
-      .sort({ timestamp: -1 }) // 按时间倒序排列
-      .lean(); // 使用lean()获取普通JavaScript对象，提高性能
+      .sort({ timestamp: -1 }) // Sort by timestamp in descending order
+      .lean(); // Use lean() to get plain JavaScript objects for better performance
 
-    // 返回结果
+    // Return result
     res.json({
       success: true,
       data: records,
@@ -155,9 +155,9 @@ router.get('/records', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('查询垃圾记录失败:', error);
+    console.error('Failed to query trash records:', error);
     res.status(500).json({ 
-      error: '服务器错误，无法查询垃圾记录',
+      error: 'Server error, unable to query trash records',
       message: error.message 
     });
   }
