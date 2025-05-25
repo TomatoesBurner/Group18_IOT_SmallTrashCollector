@@ -14,62 +14,70 @@ This is a Node.js/Express.js-based backend server for a smart trash bin system, 
 ## Installation Steps
 
 1. Clone the repository
-```
-git clone <repository-url>
-cd small-Trash-collector-backend
-```
+   ```
+   gh repo clone TomatoesBurner/Group18_IOT_SmartTrashCollector
+   cd back-end
+   ```
 
 2. Install dependencies
-```
-npm install
-```
+   ```
+   npm install
+   ```
 
 3. Configure environment variables
-Create a `.env` file with the following content:
-```
-PORT=3000
-# Add any other necessary environment variables
-```
+   Create a `.env` file with the following content:
+   ```
+   PORT=3008
+   # Add any other necessary environment variables
+   ```
 
 4. Start the server
-```
-npm start
-```
+   ```
+   npm start
+   ```
 
-Start in development mode (auto-restart with nodemon):
-```
-npm run dev
-```
+   Start in development mode (auto-restart with nodemon):
+   ```
+   npm run dev
+   ```
 
 ## API Documentation
 
-### Get All Trash Bin Statuses
+### Save Trash Disposal Record
 ```
-GET /api/trash-bins
-```
-
-### Get Specific Trash Bin Status
-```
-GET /api/trash-bins/:id
-```
-
-### Get Dry/Wet Trash Bin Weight Data
-```
-GET /api/trash-bins/weight          # Get all weight data
-GET /api/trash-bins/weight/dry      # Get dry trash weight data
-GET /api/trash-bins/weight/wet      # Get wet trash weight data
-```
-
-### Send Command to Specific Trash Bin
-```
-POST /api/trash-bins/:id/command
+POST /api/smart-bins/record
 ```
 Request body:
 ```json
 {
-  "command": "open" // Options: open, close, reset, etc.
+  "type": "dry",
+  "weight": 5.0,
+  "currentWeight": 10.0,
+  "binId": "bin001",
+  "isFull": false
 }
 ```
+
+### Reset Trash Bin
+```
+POST /api/smart-bins/reset
+```
+Request body:
+```json
+{
+  "type": "dry",
+  "binId": "bin001"
+}
+```
+
+### Query Trash Records
+```
+GET /api/smart-bins/records?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&type=dry
+```
+Query parameters:
+- `startDate`: Start date for the query (required)
+- `endDate`: End date for the query (required)
+- `type`: Trash type, either `dry` or `wet` (optional)
 
 ## WebSocket Events
 
@@ -88,8 +96,8 @@ Event: `binStatusUpdate`
 Event: `binWeightUpdate`
 ```json
 {
-  "type": "dry",      // Trash bin type: 'dry' or 'wet'
-  "weight": 7.5,      // Weight (kg)
+  "type": "dry",
+  "weight": 7.5,
   "timestamp": "2023-08-01T12:00:00Z"
 }
 ```
