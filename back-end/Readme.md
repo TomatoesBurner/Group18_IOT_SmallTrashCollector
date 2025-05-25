@@ -1,122 +1,80 @@
-# 智能垃圾桶后端服务器
+# Smart Trash Bin Backend Server
 
-这是一个基于Node.js/Express.js的智能垃圾桶系统后端服务器，主要功能是作为服务器端接收和发送数据给IoT端和前端。通讯方式为MQTT协议，三端共用一个WiFi网络。
+This is a Node.js/Express.js-based backend server for a smart trash bin system, primarily functioning as the server-side to receive and send data to IoT devices and the frontend. Communication is via HTTP and Socket.IO, with all components sharing a WiFi network.
 
-## 功能特点
+## Features
 
-- 通过MQTT协议与智能垃圾桶IoT设备通信
-- 提供RESTful API接口供前端应用调用
-- 实时监控垃圾桶状态（填充度、电池电量等）
-- 支持向垃圾桶发送控制命令
-- 监控干/湿垃圾桶的重量数据
-- 通过WebSocket实时向前端推送状态更新
+- Communicates with smart trash bin IoT devices via HTTP protocol
+- Provides RESTful API interfaces for frontend applications
+- Real-time monitoring of trash bin status (fill level, battery level, etc.)
+- Supports sending control commands to trash bins
+- Monitors weight data of dry/wet trash bins
+- Pushes status updates to the frontend in real-time via WebSocket
 
-## 安装步骤
+## Installation Steps
 
-1. 克隆代码库
+1. Clone the repository
 ```
 git clone <repository-url>
 cd small-Trash-collector-backend
 ```
 
-2. 安装依赖
+2. Install dependencies
 ```
 npm install
 ```
 
-3. 配置环境变量
-创建`.env`文件，内容如下：
+3. Configure environment variables
+Create a `.env` file with the following content:
 ```
 PORT=3000
-MQTT_BROKER=mqtt://localhost:1883
-# 如果需要MQTT认证，添加以下内容
-# MQTT_USERNAME=your_username
-# MQTT_PASSWORD=your_password
+# Add any other necessary environment variables
 ```
 
-4. 启动服务器
+4. Start the server
 ```
 npm start
 ```
 
-开发模式启动（使用nodemon自动重启）：
+Start in development mode (auto-restart with nodemon):
 ```
 npm run dev
 ```
 
-## API接口说明
+## API Documentation
 
-### 获取所有垃圾桶状态
+### Get All Trash Bin Statuses
 ```
 GET /api/trash-bins
 ```
 
-### 获取特定垃圾桶状态
+### Get Specific Trash Bin Status
 ```
 GET /api/trash-bins/:id
 ```
 
-### 获取干/湿垃圾桶重量数据
+### Get Dry/Wet Trash Bin Weight Data
 ```
-GET /api/trash-bins/weight          # 获取所有重量数据
-GET /api/trash-bins/weight/dry      # 获取干垃圾重量数据
-GET /api/trash-bins/weight/wet      # 获取湿垃圾重量数据
+GET /api/trash-bins/weight          # Get all weight data
+GET /api/trash-bins/weight/dry      # Get dry trash weight data
+GET /api/trash-bins/weight/wet      # Get wet trash weight data
 ```
 
-### 向特定垃圾桶发送命令
+### Send Command to Specific Trash Bin
 ```
 POST /api/trash-bins/:id/command
 ```
-请求体：
+Request body:
 ```json
 {
-  "command": "open" // 可选值: open, close, reset等
+  "command": "open" // Options: open, close, reset, etc.
 }
 ```
 
-## MQTT主题说明
+## WebSocket Events
 
-### 垃圾桶状态上报
-主题: `trash/{bin_id}/status`
-```json
-{
-  "fillLevel": 75,      // 填充百分比
-  "batteryLevel": 80,   // 电池百分比
-  "timestamp": "2023-08-01T12:00:00Z"
-}
-```
-
-### 干垃圾重量上报
-主题: `trash/dry/weight`
-```json
-{
-  "weight": 7.5,        // 重量（千克）
-  "timestamp": "2023-08-01T12:00:00Z"
-}
-```
-
-### 湿垃圾重量上报
-主题: `trash/wet/weight`
-```json
-{
-  "weight": 8.2,        // 重量（千克）
-  "timestamp": "2023-08-01T12:00:00Z"
-}
-```
-
-### 向垃圾桶发送命令
-主题: `trash/{bin_id}/command`
-```json
-{
-  "command": "open",    // 命令名称
-  "timestamp": "2023-08-01T12:00:00Z"
-}
-```
-
-## WebSocket事件
-
-### 垃圾桶状态更新
-事件: `binStatusUpdate`
+### Trash Bin Status Update
+Event: `binStatusUpdate`
 ```json
 {
   "id": "bin001",
@@ -126,63 +84,49 @@ POST /api/trash-bins/:id/command
 }
 ```
 
-### 垃圾桶重量更新
-事件: `binWeightUpdate`
+### Trash Bin Weight Update
+Event: `binWeightUpdate`
 ```json
 {
-  "type": "dry",      // 垃圾桶类型：'dry'或'wet'
-  "weight": 7.5,      // 重量（千克）
+  "type": "dry",      // Trash bin type: 'dry' or 'wet'
+  "weight": 7.5,      // Weight (kg)
   "timestamp": "2023-08-01T12:00:00Z"
 }
 ```
 
-## 前端集成
+## Frontend Integration
 
-### WebSocket客户端示例
+### WebSocket Client Example
 ```javascript
-// 使用socket.io-client
-const socket = io('http://localhost:3000');
+// Using socket.io-client
+const socket = io('http://localhost:3080');
 
-// 监听垃圾桶状态更新
+// Listen for trash bin status updates
 socket.on('binStatusUpdate', (data) => {
-  console.log('垃圾桶状态更新:', data);
-  // 更新UI显示
+  console.log('Trash bin status update:', data);
+  // Update UI display
 });
 
-// 监听垃圾桶重量更新
+// Listen for trash bin weight updates
 socket.on('binWeightUpdate', (data) => {
-  console.log('垃圾桶重量更新:', data);
-  // 更新UI显示
+  console.log('Trash bin weight update:', data);
+  // Update UI display
 });
 ```
 
-## 测试工具
+## Why Choose HTTP and Socket.IO
 
-### 垃圾桶状态模拟器
-```
-node test/bin-simulator.js [bin_id]
-```
+For IoT device communication, HTTP and Socket.IO offer the following advantages:
 
-### 垃圾桶重量模拟器
-```
-node test/weight-simulator.js
-```
+1. Simplicity: HTTP is widely used and easy to implement
+2. Real-time communication: Socket.IO provides real-time, bidirectional communication
+3. Cross-platform compatibility: Works well with various devices and platforms
+4. Robustness: HTTP is a well-established protocol with extensive support
+5. Flexibility: Easily integrates with existing web technologies
 
-## 为什么选择MQTT而不是HTTP
-
-对于IoT设备通信，MQTT相比HTTP有如下优势：
-
-1. 资源消耗低：MQTT协议设计轻量，适合资源受限的IoT设备
-2. 支持发布/订阅模式：更适合实时数据交换和事件通知
-3. 支持QoS保证消息可靠性：可确保重要消息的传递
-4. 连接持久化：减少频繁建立连接的开销
-5. 双向通信：服务器可以主动向IoT设备发送命令
-6. 网络使用效率高：适合带宽有限或不稳定的网络环境
-
-## 技术栈
+## Tech Stack
 
 - Node.js
 - Express.js
-- MQTT.js
 - Socket.IO
-- 其他依赖请参考package.json 
+- For other dependencies, please refer to package.json 
